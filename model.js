@@ -11,10 +11,35 @@ const LETTERS = 'ABCDEFGHIJKLMNabcdefghijklm';
 let model = null;
 let board = null;
 
+function dump(board, size, offset, moves) {
+    for (let y = 0; y < size; y++) {
+        let s = '';
+        for (let i = 0; i <= y; i++) {
+            s = s + ' ';
+        }
+        for (let x = 0; x < size; x++) {
+            const pos = y * size + x;
+            if (board[offset + pos] > 0) {
+                s = s + '* ';
+            } else if (board[offset + pos] < 0) {
+                s = s + 'o ';
+            }  else if (!_.isUndefined(moves) && (moves[offset + pos] > 1 / (size * size))) {
+                s = s + '+ ';
+            }  else if (!_.isUndefined(moves) && (moves[offset + pos] < -1 / (size * size))) {
+                s = s + 'X ';
+            }  else {
+                s = s + '. ';
+            }
+        }
+        console.log(s);
+    }
+    console.log('');
+}
+
 function FormatMove(move) {
     const col = move % SIZE;
     const row = (move / SIZE) | 0;
-    return LETTERS[col] + row;
+    return LETTERS[col] + (row + 1);
 }
 
 function InitializeFromFen(fen, board, player) {
@@ -72,6 +97,8 @@ async function Advisor(sid, fen, player, coeff, callback) {
     const t2 = Date.now();
     console.log('Predict time: ' + (t2 - t1));
 
+    dump(board, SIZE, 0, y);
+
     let r = [];
     for (let i = 0; i < y.length; i++) {
         r.push({
@@ -90,7 +117,6 @@ async function Advisor(sid, fen, player, coeff, callback) {
     let sz = 0;
     while (sz < r.length - 1) {
         if ((sz > 0) && (Math.abs(r[sz].weight) * coeff < Math.abs(r[sz - 1].weight))) break;
-        if (sz > 10) break;
         result.push({
             sid: sid,
             move: FormatMove(r[sz].pos).toLowerCase(),
