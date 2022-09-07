@@ -6,7 +6,7 @@ const _ = require('underscore');
 const SIZE = 11;
 const URL = 'https://games.dtco.ru/hex-' + SIZE + '/model.json';
 
-const LETTERS = 'ABCDEFGHIJKLMNabcdefghijklm';
+const LETTERS = 'ABCDEFGHIJKLMNabcdefghijklmn';
 
 let model = null;
 let board = null;

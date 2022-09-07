@@ -107,7 +107,7 @@ let request = function(app) {
             if (!coeff) coeff = 5;
             const result = setup.match(/\?turn=(\d+);\&setup=([^-]*)/);
             if (result) {
-                const player = (result[0] == '0') ? 1 : -1;
+                const player = (result[1] == '0') ? 1 : -1;
                 const fen = result[2];
                 console.log('[' + sid + '] fen = ' + fen + ', coeff = ' + coeff);
                 logger.info('[' + sid + '] fen = ' + fen);
