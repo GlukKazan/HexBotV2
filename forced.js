@@ -93,9 +93,12 @@ function analyze(board, player, size, moves) {
             r.push(p);
         }
     }
-    _.each(r, function(pos) {
-        moves[pos] += RESULT_VALUE;
-    });
+    if (!_.isUndefined(moves)) {
+        _.each(r, function(pos) {
+            moves[pos] += RESULT_VALUE;
+        });
+    }
+    return r;
 }
 
 module.exports.analyze = analyze;

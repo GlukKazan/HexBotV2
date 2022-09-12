@@ -3,7 +3,8 @@
 const axios = require('axios');
 const _ = require('underscore');
 
-const ai = require('./model');
+const ai = require('./ai');
+const model = require('./model');
 
 const VARIANT  = 225;
 const SERVICE  = 'https://games.dtco.ru';
@@ -111,7 +112,7 @@ let request = function(app) {
                 const fen = result[2];
                 console.log('[' + sid + '] fen = ' + fen + ', coeff = ' + coeff);
                 logger.info('[' + sid + '] fen = ' + fen);
-                ai.Advisor(sid, fen, player, coeff, AdvisorCallback);
+                model.advise(sid, fen, player, coeff, AdvisorCallback);
             } else {
                 app.state = STATE.RQST;
             }

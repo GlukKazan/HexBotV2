@@ -12,6 +12,10 @@ const URL = 'https://games.dtco.ru/hex-' + SIZE + '/model.json';
 let model = null;
 let board = null;
 
+function getSize() {
+    return SIZE;
+}
+
 async function InitModel() {
     if (model === null) {
         model = await tf.loadLayersModel(URL);
@@ -19,7 +23,27 @@ async function InitModel() {
     }
 }
 
-async function Advisor(sid, fen, player, coeff, callback) {
+async function predict(board) {
+    const t0 = Date.now();
+    await InitModel();
+    const t1 = Date.now();
+    console.log('Load time: ' + (t1 - t0));
+
+    const shape = [1, 1, SIZE, SIZE];
+    const xs = tf.tensor4d(board, shape, 'float32');
+    const ys = await model.predict(xs);
+    const moves = await ys.data();
+
+    xs.dispose();
+    ys.dispose();
+
+    const t2 = Date.now();
+    console.log('Predict time: ' + (t2 - t1));
+
+    return moves;
+}
+
+async function advise(sid, fen, player, coeff, callback) {
     board = new Float32Array(SIZE * SIZE);
 
     const t0 = Date.now();
@@ -72,4 +96,6 @@ async function Advisor(sid, fen, player, coeff, callback) {
     callback(result, t2 - t0);
 }
 
-module.exports.Advisor = Advisor;
+module.exports.getSize = getSize;
+module.exports.predict = predict;
+module.exports.advise = advise;
