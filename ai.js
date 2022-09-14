@@ -202,6 +202,12 @@ async function FindMove(fen, player, callback, done, logger) {
     });
 
     board[r.move] = 1;
+    const goal = checkGoal(board, player);
+    if (goal !== null) {
+        done(goal);
+        return;
+    }
+
     const setup = utils.getFen(board, player);
     const t1 = Date.now();
     callback(r.move, setup, (r.w / r.n) * 1000, t1 - t0);
