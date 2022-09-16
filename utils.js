@@ -103,7 +103,7 @@ function getFen(board, size, player) {
             p = 0;
         }
         k++;
-        const v = board[pos];
+        const v = board[pos] * player;
         if (Math.abs(v) < 0.01) {
             if ((p != 0) || ((c > 8) && (p == 0))) {
                 str += pieceNotation(c, p, size);
@@ -112,7 +112,7 @@ function getFen(board, size, player) {
             c++;
             p = 0;
         } else {
-            if (v * player < -0.01) {
+            if (v * p < 0.01) {
                 if (c > 0) {
                     str += pieceNotation(c, p, size);
                     c = 0;
@@ -127,6 +127,7 @@ function getFen(board, size, player) {
     if (c > 0) {
         str += pieceNotation(c, p, size);
     }
+    str += (player > 0) ? '-w' : '-b';
     return str;
 }
 

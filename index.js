@@ -5,6 +5,7 @@ const _ = require('underscore');
 
 const ai = require('./ai');
 const model = require('./model');
+const utils = require('./utils');
 
 const VARIANT  = 225;
 const SERVICE  = 'https://games.dtco.ru';
@@ -248,7 +249,7 @@ function DoneCallback(goal) {
 }
 
 function FinishTurnCallback(bestMove, fen, value, time) {
-    let move = utils.FormatMove(bestMove);
+    const move = utils.FormatMove(bestMove);
     const result = setup.match(/[?&]turn=(\d+)/);
     if (result) {
         turn = result[1];
@@ -278,16 +279,18 @@ function FinishTurnCallback(bestMove, fen, value, time) {
 let sendMove = function(app) {
     //  console.log('MOVE');
     app.state  = STATE.WAIT;
-    const result = setup.match(/\?turn=(\d+);\&setup=([^-]*)/);
-    if (result) {
-        const player = (result[1] == '0') ? 1 : -1;
-        let fen = result[2];
-        console.log('[' + sid + '] fen = ' + fen);
-        logger.info('[' + sid + '] fen = ' + fen);
-        ai.FindMove(fen, player, FinishTurnCallback, DoneCallback, logger);
-    } else {
-        app.state  = STATE.STOP;
+    let player = 1;
+    let fen = '92/92/92/92/92/92/92/92/92/92/92';
+    if (setup) {
+        const result = setup.match(/\?turn=(\d+);\&setup=([^-]*)/);
+        if (result) {
+            player = (result[1] == '0') ? 1 : -1;
+            fen = result[2];
+        }
     }
+    console.log('[' + sid + '] fen = ' + fen);
+    logger.info('[' + sid + '] fen = ' + fen);
+    ai.FindMove(fen, player, FinishTurnCallback, DoneCallback, logger);
     return true;
 }
 

@@ -2,7 +2,7 @@
 
 const _ = require('underscore');
 
-const RESULT_VALUE = 0.8;
+const RESULT_VALUE = 0.9;
 
 function analyze(board, player, size, moves) {
     const dirs = [
