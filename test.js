@@ -4,8 +4,8 @@ const ai = require('./ai');
 const utils = require('./utils');
 
 const SIZE   = 11;
-const FEN    = '92/92/4a5A/6A1a2/3A2a2a1/3B3C/2bAaAd/3AaAaA3/2DaA3/Ae5/2A8';
-const PLAYER = -1;
+const FEN    = '3a7/2aA7/1aA8/92/1AaAaAb3/1AaAbA4/1AaA2A4/1Ac6/1AaA7/92/A91';
+const PLAYER = 1;
 
 function DoneCallback(goal) {
     if (goal > 0) {

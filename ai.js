@@ -7,7 +7,7 @@ const hints = require('./forced');
 const utils = require('./utils');
 
 const C = 1.5;
-const D = 7.5;
+const D = 30.5;
 
 const DO_TOTAL = 10000;
 const EPS = 0.001;

@@ -39,6 +39,7 @@ function analyze(board, player, size, moves) {
         for (let x = 0; x < size - 1; x++) {
             const pos = y * size + x;
             let p = null;
+            if (board[pos] < 0.01) continue;
             if (board[pos - size] < -0.01) {
                 if (Math.abs(board[pos - size + 1]) < 0.01) p = pos - size + 1;
             }
@@ -53,6 +54,7 @@ function analyze(board, player, size, moves) {
         for (let x = 1; x < size; x++) {
             const pos = y * size + x;
             let p = null;
+            if (board[pos] < 0.01) continue;
             if (board[pos + size - 1] < -0.01) {
                 if (Math.abs(board[pos + size]) < 0.01) p = pos + size;
             }
@@ -68,6 +70,7 @@ function analyze(board, player, size, moves) {
         for (let y = 0; y < size - 1; y++) {
             const pos = y * size + x;
             let p = null;
+            if (board[pos] < 0.01) continue;
             if (board[pos - 1] < -0.01) {
                 if (Math.abs(board[pos + size - 1]) < 0.01) p = pos + size - 1;
             }
@@ -82,6 +85,7 @@ function analyze(board, player, size, moves) {
         for (let y = 1; y < size; y++) {
             const pos = y * size + x;
             let p = null;
+            if (board[pos] < 0.01) continue;
             if (board[pos + 1] < -0.01) {
                 if (Math.abs(board[pos - size + 1]) < 0.01) p = pos - size + 1;
             }
