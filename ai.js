@@ -9,6 +9,7 @@ const utils = require('./utils');
 const C = 1.5;
 const D = 30.5;
 
+const MAX_TIME = 5000;
 const DO_TOTAL = 10000;
 const EPS = 0.001;
 
@@ -202,6 +203,9 @@ async function FindMove(fen, player, callback, done, logger) {
         c.n++;
         root.n++;
         board[c.move] = 0;
+        if (i % 100 == 0) {
+            if (Date.now() - t0 > MAX_TIME) break;
+        }
     }
 
     const r = _.sortBy(root.childs, function(c) {
