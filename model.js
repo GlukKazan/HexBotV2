@@ -16,16 +16,21 @@ function getSize() {
     return SIZE;
 }
 
-async function InitModel() {
+async function init() {
+    await tf.ready();
+    console.log(tf.getBackend());
+}
+
+async function LoadModel() {
     if (model === null) {
+        await init();
         model = await tf.loadLayersModel(URL);
-        console.log(tf.getBackend());
     }
 }
 
 async function predict(board) {
     const t0 = Date.now();
-    await InitModel();
+    await LoadModel();
     const t1 = Date.now();
     console.log('Load time: ' + (t1 - t0));
 
@@ -47,7 +52,7 @@ async function advise(sid, fen, player, coeff, callback) {
     board = new Float32Array(SIZE * SIZE);
 
     const t0 = Date.now();
-    await InitModel();
+    await LoadModel();
     const t1 = Date.now();
     console.log('Load time: ' + (t1 - t0));
 

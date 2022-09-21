@@ -214,9 +214,9 @@ function getSetup(fen) {
 function DoneCallback(goal) {
     app.state  = STATE.WAIT;
     if (goal > 0) {
-        console.log('WON !!!');
+        console.log('WON !!! ' + uid);
         logger.info('WON !!!');
-        axios.post(SERVICE + '/session/close', {
+        axios.post(SERVICE + '/api/session/close', {
             winner: uid
         }, {
             headers: { Authorization: `Bearer ${TOKEN}` }
@@ -232,7 +232,7 @@ function DoneCallback(goal) {
     } else {
         console.log('LOSE !!!');
         logger.info('LOSE !!!');
-        axios.post(SERVICE + '/session/close', {
+        axios.post(SERVICE + '/api/session/close', {
             loser: uid
         }, {
             headers: { Authorization: `Bearer ${TOKEN}` }

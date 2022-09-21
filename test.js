@@ -40,15 +40,6 @@ async function run() {
         return;
     }
 
-/*  board[110] = 1;
-    utils.dump(board, SIZE, 0);
-
-    goal = ai.checkGoal(board, PLAYER, SIZE);
-    if (goal !== null) {
-        console.log('Goal = ' + goal);
-        return;
-    }*/
-
     await ai.FindMove(FEN, PLAYER, FinishTurnCallback, DoneCallback);
 }
 

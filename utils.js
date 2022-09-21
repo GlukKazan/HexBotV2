@@ -37,6 +37,9 @@ function navigate(pos, dir, size) {
             if (x == 0) return null;
         } else {
             if (y == 0) return null;
+            if (dir > -size) {
+                if (x == size - 1) return null;
+            }
         }
     }
     if (dir > 0) {
@@ -44,6 +47,9 @@ function navigate(pos, dir, size) {
             if (x == size - 1) return null;
         } else {
             if (y == size - 1) return null;
+            if (dir < size) {
+                if (x == 0) return null;
+            }
         }
     }
     return pos + dir;

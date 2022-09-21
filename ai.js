@@ -106,7 +106,7 @@ function checkGoal(board, player, size) {
     let ix = 0;
     let group = [];
     _.each(edges[ix], function(p) {
-        if (board[p] * player < EPS) return;
+        if (board[p] < EPS) return;
         group.push(p);
     });
     let f = false;
@@ -116,7 +116,7 @@ function checkGoal(board, player, size) {
             const p = utils.navigate(group[i], dir, size);
             if (p === null) return;
             if (_.indexOf(group, p) >= 0) return;
-            if (board[p] * player < EPS) return;
+            if (board[p] < EPS) return;
             if (_.indexOf(edges[ix + 1], p) >= 0) f = true;
             group.push(p);
         });
@@ -125,7 +125,7 @@ function checkGoal(board, player, size) {
     ix += 2;
     group = [];
     _.each(edges[ix], function(p) {
-        if (board[p] * player > -EPS) return;
+        if (board[p] > -EPS) return;
         group.push(p);
     });
     f = false;
@@ -135,7 +135,7 @@ function checkGoal(board, player, size) {
             const p = utils.navigate(group[i], dir, size);
             if (p === null) return;
             if (_.indexOf(group, p) >= 0) return;
-            if (board[p] * player > -EPS) return;
+            if (board[p] > -EPS) return;
             if (_.indexOf(edges[ix + 1], p) >= 0) f = true;
             group.push(p);
         });
@@ -180,14 +180,14 @@ async function FindMove(fen, player, callback, done, logger) {
 
     let goal = checkGoal(board, player, size);
     if (goal !== null) {
-        done(goal);
+        done(player * goal);
         return;
     }
 
     const probs = await model.predict(board);
 //  utils.dump(board, size, 0, probs);
     hints.analyze(board, player, size, probs);
-//  utils.dump(board, size, 0, probs);
+    utils.dump(board, size, 0, probs);
 
     let moves = getMoves(board, size);
     const root = new Node(moves);
@@ -222,12 +222,6 @@ async function FindMove(fen, player, callback, done, logger) {
     }
 
     board[r[0].move] = 1;
-    goal = checkGoal(board, player, size);
-    if (goal !== null) {
-        done(goal);
-        return;
-    }
-
     const setup = utils.getFen(board, size, -player);
     callback(r[0].move, setup, (r[0].n / root.n) * 1000, t1 - t0);
 }
