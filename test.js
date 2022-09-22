@@ -4,7 +4,8 @@ const ai = require('./ai');
 const utils = require('./utils');
 
 const SIZE   = 11;
-const FEN    = '3a7/2aA7/1aA8/92/1AaAaAb3/1AaAbA4/1AaA2A4/1Ac6/1AaA7/92/A91';
+const FEN    = '92/91a/92/92/7A2a/5A5/2A8/9a1/92/92/92';
+//const FEN  = '92/91a/92/92/92/5A5/2A8/9a1/92/92/92';
 const PLAYER = 1;
 
 function DoneCallback(goal) {
@@ -34,12 +35,6 @@ async function run() {
     console.log(fen);
 
 //  utils.dump(board, SIZE, 0);
-    let goal = ai.checkGoal(board, PLAYER, SIZE);
-    if (goal !== null) {
-        console.log('Goal = ' + goal);
-        return;
-    }
-
     await ai.FindMove(FEN, PLAYER, FinishTurnCallback, DoneCallback);
 }
 

@@ -4,6 +4,7 @@ const _ = require('underscore');
 
 const model = require('./model');
 const hints = require('./forced');
+const graph = require('./graph');
 const utils = require('./utils');
 
 const C = 1.5;
@@ -12,8 +13,6 @@ const D = 30.5;
 const MAX_TIME = 5000;
 const DO_TOTAL = 10000;
 const EPS = 0.001;
-
-let edges = null;
 
 function uct(parent, node) {
     return (node.w / node.n) + C * Math.sqrt(Math.log(parent.n) / node.n) + D * (node.p / node.n);
@@ -87,63 +86,6 @@ function getAvail(node) {
     return r;
 }
 
-function checkGoal(board, player, size) {
-    if (edges === null) {
-        edges = [];
-        let e = [];
-        for (let i = 0; i < size; i++) e.push(i);
-        edges.push(e);
-        e = [];
-        for (let i = 0; i < size; i++) e.push(size * (size - 1) + i);
-        edges.push(e);
-        e = [];
-        for (let i = 0; i < size; i++) e.push(size * i);
-        edges.push(e);
-        e = [];
-        for (let i = 0; i < size; i++) e.push(size * i + (size - 1));
-        edges.push(e);
-    }
-    let ix = 0;
-    let group = [];
-    _.each(edges[ix], function(p) {
-        if (board[p] < EPS) return;
-        group.push(p);
-    });
-    let f = false;
-    for (let i = 0; i < group.length; i++) {
-        if (f) break;
-        _.each([-size, -size + 1, 1, size, size - 1, -1], function(dir) {
-            const p = utils.navigate(group[i], dir, size);
-            if (p === null) return;
-            if (_.indexOf(group, p) >= 0) return;
-            if (board[p] < EPS) return;
-            if (_.indexOf(edges[ix + 1], p) >= 0) f = true;
-            group.push(p);
-        });
-    }
-    if (f) return player;
-    ix += 2;
-    group = [];
-    _.each(edges[ix], function(p) {
-        if (board[p] > -EPS) return;
-        group.push(p);
-    });
-    f = false;
-    for (let i = 0; i < group.length; i++) {
-        if (f) break;
-        _.each([-size, -size + 1, 1, size, size - 1, -1], function(dir) {
-            const p = utils.navigate(group[i], dir, size);
-            if (p === null) return;
-            if (_.indexOf(group, p) >= 0) return;
-            if (board[p] > -EPS) return;
-            if (_.indexOf(edges[ix + 1], p) >= 0) f = true;
-            group.push(p);
-        });
-    }
-    if (f) return -player;
-    return null;
-}
-
 function simulate(board, player, size, move) {
     let undo = [];
     if (move !== null) {
@@ -165,11 +107,11 @@ function simulate(board, player, size, move) {
             p = -p;
         }
     }
-    const g = checkGoal(board, player, size);
+    const won = graph.isLose(board, -player);
     _.each(undo, function(p) {
         board[p] = 0;
     });
-    return g;
+    return won;
 }
 
 async function FindMove(fen, player, callback, done, logger) {
@@ -178,22 +120,25 @@ async function FindMove(fen, player, callback, done, logger) {
     let board = new Float32Array(size * size);
     utils.InitializeFromFen(fen, board, size, player);
 
-    let goal = checkGoal(board, player, size);
-    if (goal !== null) {
-        done(player * goal);
+    if (graph.isLose(board, player)) {
+        done(-1);
+        return;
+    }
+    if (graph.isLose(board, -player)) {
+        done(1);
         return;
     }
 
-    const probs = await model.predict(board);
+    const w = await model.predict(board);
 //  utils.dump(board, size, 0, probs);
-    hints.analyze(board, player, size, probs);
-    utils.dump(board, size, 0, probs);
+    hints.analyze(board, player, size, w);
+    utils.dump(board, size, 0, w);
 
     let moves = getMoves(board, size);
     const root = new Node(moves);
 
     for (let i = 0; i < DO_TOTAL; i++) {
-        const c = root.getUCT(board, size, probs);
+        const c = root.getUCT(board, size, w);
         if (c === null) break;
         board[c.move] = 1;
         const move = c.getRandom(board, size);
@@ -226,5 +171,4 @@ async function FindMove(fen, player, callback, done, logger) {
     callback(r[0].move, setup, (r[0].n / root.n) * 1000, t1 - t0);
 }
 
-module.exports.checkGoal = checkGoal;
 module.exports.FindMove = FindMove;

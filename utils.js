@@ -137,8 +137,13 @@ function getFen(board, size, player) {
     return str;
 }
 
+function getDirs(size) {
+    return [-size, -size + 1, 1, size, size - 1, -1];
+}
+
 module.exports.dump = dump;
 module.exports.navigate = navigate;
 module.exports.FormatMove = FormatMove;
 module.exports.InitializeFromFen = InitializeFromFen;
 module.exports.getFen = getFen;
+module.exports.getDirs = getDirs;
