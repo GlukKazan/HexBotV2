@@ -3,6 +3,9 @@
 const _ = require('underscore');
 
 const LETTERS = 'ABCDEFGHIJKabcdefghijk';
+const EPS = 0.01;
+
+let edges = null;
 
 function dump(board, size, offset, moves) {
     for (let y = 0; y < size; y++) {
@@ -141,9 +144,69 @@ function getDirs(size) {
     return [-size, -size + 1, 1, size, size - 1, -1];
 }
 
+function checkGoal(board, player, size) {
+    if (edges === null) {
+        edges = [];
+        let e = [];
+        for (let i = 0; i < size; i++) e.push(i);
+        edges.push(e);
+        e = [];
+        for (let i = 0; i < size; i++) e.push(size * (size - 1) + i);
+        edges.push(e);
+        e = [];
+        for (let i = 0; i < size; i++) e.push(size * i);
+        edges.push(e);
+        e = [];
+        for (let i = 0; i < size; i++) e.push(size * i + (size - 1));
+        edges.push(e);
+    }
+    let ix = 0;
+    let group = [];
+    _.each(edges[ix], function(p) {
+        if (board[p] * player < EPS) return;
+        group.push(p);
+    });
+//  console.log(group);
+    let f = false;
+    for (let i = 0; i < group.length; i++) {
+        if (f) break;
+        _.each(getDirs(size), function(dir) {
+            const p = navigate(group[i], dir, size);
+            if (p === null) return;
+            if (_.indexOf(group, p) >= 0) return;
+            if (board[p] * player < EPS) return;
+            if (_.indexOf(edges[ix + 1], p) >= 0) f = true;
+            group.push(p);
+        });
+    }
+    if (f) return player;
+    ix += 2;
+    group = [];
+    _.each(edges[ix], function(p) {
+        if (board[p] * player > -EPS) return;
+        group.push(p);
+    });
+//  console.log(group);
+    f = false;
+    for (let i = 0; i < group.length; i++) {
+        if (f) break;
+        _.each(getDirs(size), function(dir) {
+            const p = navigate(group[i], dir, size);
+            if (p === null) return;
+            if (_.indexOf(group, p) >= 0) return;
+            if (board[p] * player > -EPS) return;
+            if (_.indexOf(edges[ix + 1], p) >= 0) f = true;
+            group.push(p);
+        });
+    }
+    if (f) return -player;
+    return null;
+}
+
 module.exports.dump = dump;
 module.exports.navigate = navigate;
 module.exports.FormatMove = FormatMove;
 module.exports.InitializeFromFen = InitializeFromFen;
 module.exports.getFen = getFen;
 module.exports.getDirs = getDirs;
+module.exports.checkGoal = checkGoal;

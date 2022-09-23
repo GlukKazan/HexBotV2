@@ -107,11 +107,11 @@ function simulate(board, player, size, move) {
             p = -p;
         }
     }
-    const won = graph.isLose(board, -player);
+    const g = utils.checkGoal(board, player, size);
     _.each(undo, function(p) {
         board[p] = 0;
     });
-    return won;
+    return g;
 }
 
 async function FindMove(fen, player, callback, done, logger) {
@@ -120,12 +120,9 @@ async function FindMove(fen, player, callback, done, logger) {
     let board = new Float32Array(size * size);
     utils.InitializeFromFen(fen, board, size, player);
 
-    if (graph.isLose(board, player)) {
-        done(-1);
-        return;
-    }
-    if (graph.isLose(board, -player)) {
-        done(1);
+    let goal = utils.checkGoal(board, player, size);
+    if (goal !== null) {
+        done(goal);
         return;
     }
 
