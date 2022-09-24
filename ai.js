@@ -4,7 +4,7 @@ const _ = require('underscore');
 
 const model = require('./model');
 const hints = require('./forced');
-const graph = require('./graph');
+const pie = require('./pie');
 const utils = require('./utils');
 
 const C = 1.5;
@@ -123,6 +123,16 @@ async function FindMove(fen, player, callback, done, logger) {
     let goal = utils.checkGoal(board, player, size);
     if (goal !== null) {
         done(goal);
+        return;
+    }
+
+    const m = pie.FindMove(board, size);
+    if (m !== null) {
+        const t1 = Date.now();
+        board = new Float32Array(size * size);
+        board[Math.abs(m)] = 1;
+        const setup = utils.getFen(board, size, -player);
+        callback(m, setup, 1000, t1 - t0);
         return;
     }
 

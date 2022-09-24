@@ -59,9 +59,14 @@ function navigate(pos, dir, size) {
 }
 
 function FormatMove(move, size) {
+    let sx = '';
+    if (move < 0) {
+        sx = '+';
+        move = -move;
+    }
     const col = move % size;
     const row = (move / size) | 0;
-    return (LETTERS[col] + (row + 1)).toLowerCase();
+    return (LETTERS[col] + (row + 1)).toLowerCase() + sx;
 }
 
 function InitializeFromFen(fen, board, size, player) {
