@@ -96,6 +96,24 @@ function InitializeFromFen(fen, board, size, player) {
     }
 }
 
+function encode(board, size, planes, out) {
+    if (planes == 1) {
+        for (let pos = 0; pos < size * size; pos++) {
+            out[pos] = board[pos];
+        }
+    } else {
+        const offset = size * size;
+        for (let pos = 0; pos < size * size; pos++) {
+            if (board[pos] > 0.01) {
+                out[pos] = 1;
+            }
+            if (board[pos] < -0.01) {
+                out[offset + pos] = 1;
+            }
+        }
+    }
+}
+
 function pieceNotation(c, p, size) {
     if (p == 0) return '' + c;
     c--;
@@ -215,3 +233,4 @@ module.exports.InitializeFromFen = InitializeFromFen;
 module.exports.getFen = getFen;
 module.exports.getDirs = getDirs;
 module.exports.checkGoal = checkGoal;
+module.exports.encode = encode;

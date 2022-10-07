@@ -249,7 +249,7 @@ function DoneCallback(goal) {
 }
 
 function FinishTurnCallback(bestMove, fen, value, time) {
-    const move = utils.FormatMove(bestMove, model.getSize());
+    const move = utils.FormatMove(bestMove, model.SIZE);
     const result = setup.match(/[?&]turn=(\d+)/);
     if (result) {
         turn = result[1];
