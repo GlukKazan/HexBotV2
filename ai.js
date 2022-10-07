@@ -56,7 +56,7 @@ function Child(move, prior, avail, p) {
     this.moves = [];
 }
 
-Child.prototype.getRandom = function(board, size) {
+Child.prototype.getRandom = function() {
     let m = null;
     if (this.prior.length > 0) {
         m = this.prior.pop();
