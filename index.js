@@ -103,6 +103,30 @@ function AdvisorCallback(moves, time) {
     });
 }
 
+function AdvisorExCallback(sid, bestMove, fen, value, time) {
+    const moves = [{
+        sid: sid,
+        move: utils.FormatMove(bestMove, model.SIZE),
+        weight: value
+    }];
+    _.each(moves, function(m) {
+        console.log('move = ' + m.move + ', value=' + m.weight + ', time = ' + time);
+        logger.info('move = ' + m.move + ', value=' + m.weight + ', time = ' + time);
+    });
+    app.state  = STATE.WAIT;
+    axios.post(SERVICE + '/api/ai', moves , {
+        headers: { Authorization: `Bearer ${TOKEN}` }
+    })
+    .then(function (response) {
+        app.state  = STATE.RQST;
+    })
+    .catch(function (error) {
+        console.log('RQST ERROR: ' + error);
+        logger.error('RQST ERROR: ' + error);
+        app.state  = STATE.INIT;
+    });
+}
+
 let request = function(app) {
 //  console.log('RQST');
     app.state = STATE.WAIT;
@@ -113,6 +137,7 @@ let request = function(app) {
         if (response.data.length > 0) {
             const sid = response.data[0].sid;
             const setup = response.data[0].setup;
+            const level = response.data[0].level;
             let coeff = response.data[0].coeff;
             if (!coeff) coeff = 5;
             const result = setup.match(/\?turn=(\d+);\&setup=([^-]*)/);
@@ -121,7 +146,11 @@ let request = function(app) {
                 const fen = result[2];
                 console.log('[' + sid + '] fen = ' + fen + ', coeff = ' + coeff);
                 logger.info('[' + sid + '] fen = ' + fen);
-                model.advise(sid, fen, player, coeff, AdvisorCallback);
+                if (level == 1) {
+                    model.advise(sid, fen, player, coeff, AdvisorCallback);
+                } else {
+                    ai.FindMove(sid, fen, player, AdvisorExCallback);
+                }
             } else {
                 app.state = STATE.RQST;
             }
@@ -248,7 +277,7 @@ function DoneCallback(goal) {
     }
 }
 
-function FinishTurnCallback(bestMove, fen, value, time) {
+function FinishTurnCallback(sid, bestMove, fen, value, time) {
     const move = utils.FormatMove(bestMove, model.SIZE);
     const result = setup.match(/[?&]turn=(\d+)/);
     if (result) {
@@ -290,7 +319,7 @@ let sendMove = function(app) {
     }
     console.log('[' + sid + '] fen = ' + fen);
     logger.info('[' + sid + '] fen = ' + fen);
-    ai.FindMove(fen, player, FinishTurnCallback, DoneCallback, logger);
+    ai.FindMove(sid, fen, player, FinishTurnCallback, DoneCallback, logger);
     return true;
 }
 

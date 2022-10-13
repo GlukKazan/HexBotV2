@@ -7,8 +7,8 @@ const hints = require('./forced');
 const utils = require('./utils');
 
 const SIZE = 11;
-const URL = 'https://games.dtco.ru/hex-b/model.json';
-const PLANE_COUNT = 2;
+const URL = 'http://127.0.0.1:3000/hex-11/model.json';
+const PLANE_COUNT = 1;
 
 let model = null;
 let board = null;
@@ -34,10 +34,18 @@ async function predict(board) {
     const shape = [1, 1, SIZE, SIZE];
     const xs = tf.tensor4d(board, shape, 'float32');
     const ys = await model.predict(xs);
-    const m = await ys.data();
+    let m = null;
+
+    if (_.isArray(ys)) {
+        m = await ys[0].data();
+        ys[0].dispose();
+        ys[1].dispose();
+    } else {
+        m = await ys.data();
+        ys.dispose();
+    }
 
     xs.dispose();
-    ys.dispose();
 
     const t2 = Date.now();
     console.log('Predict time: ' + (t2 - t1));
@@ -57,12 +65,20 @@ async function predictEx(board) {
     const shape = [1, PLANE_COUNT, SIZE, SIZE];
     const xs = tf.tensor4d(board, shape, 'float32');
     const ys = await model.predict(xs);
-    const m = await ys[0].data();
-    const e = await ys[1].data();
+
+    let m = null;
+    let e = [0];
+    if (_.isArray(ys)) {
+        m = await ys[0].data();
+        e = await ys[1].data();
+        ys[0].dispose();
+        ys[1].dispose();
+    } else {
+        m = await ys.data();
+        ys.dispose();
+    }
 
     xs.dispose();
-    ys[0].dispose();
-    ys[1].dispose();
 
     const t2 = Date.now();
     console.log('Predict time: ' + (t2 - t1));
@@ -88,10 +104,18 @@ async function advise(sid, fen, player, coeff, callback) {
     const shape = [1, PLANE_COUNT, SIZE, SIZE];
     const xs = tf.tensor4d(b, shape, 'float32');
     const ys = await model.predict(xs);
-    const moves = await ys.data();
+    let moves = null;
+
+    if (_.isArray(ys)) {
+        moves = await ys[0].data();
+        ys[0].dispose();
+        ys[1].dispose();
+    } else {
+        moves = await ys.data();
+        ys.dispose();
+    }
 
     xs.dispose();
-    ys.dispose();
 
     const t2 = Date.now();
     console.log('Predict time: ' + (t2 - t1));

@@ -114,25 +114,27 @@ function simulate(board, player, size, move) {
     return g;
 }
 
-async function FindMove(fen, player, callback, done, logger) {
+async function FindMove(sid, fen, player, callback, done, logger) {
     const t0 = Date.now();
     let board = new Float32Array(model.SIZE * model.SIZE);
     utils.InitializeFromFen(fen, board, model.SIZE, player);
 
-    let goal = utils.checkGoal(board, player, model.SIZE);
-    if (goal !== null) {
-        done(goal);
-        return;
-    }
+    if (done) {
+        let goal = utils.checkGoal(board, player, model.SIZE);
+        if (goal !== null) {
+            done(goal);
+            return;
+        }
 
-    const m = pie.FindMove(board, model.SIZE);
-    if (m !== null) {
-        const t1 = Date.now();
-        board = new Float32Array(model.SIZE * model.SIZE);
-        board[Math.abs(m)] = 1;
-        const setup = utils.getFen(board, model.SIZE, -player);
-        callback(m, setup, 1000, t1 - t0);
-        return;
+        const m = pie.FindMove(board, model.SIZE);
+        if (m !== null) {
+            const t1 = Date.now();
+            board = new Float32Array(model.SIZE * model.SIZE);
+            board[Math.abs(m)] = 1;
+            const setup = utils.getFen(board, model.SIZE, -player);
+            callback(sid, m, setup, 1000, t1 - t0);
+            return;
+        }
     }
 
     let b = new Float32Array(model.SIZE * model.SIZE * model.PLANE_COUNT);
@@ -177,7 +179,7 @@ async function FindMove(fen, player, callback, done, logger) {
 
     board[r[0].move] = 1;
     const setup = utils.getFen(board, model.SIZE, -player);
-    callback(r[0].move, setup, (r[0].n / root.n) * 1000, t1 - t0);
+    callback(sid, r[0].move, setup, (r[0].n / root.n) * 1000, t1 - t0);
 }
 
 module.exports.FindMove = FindMove;
