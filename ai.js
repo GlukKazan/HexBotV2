@@ -103,11 +103,11 @@ function simulate(board, player, size, move) {
             const m = moves[ix];
             undo.push(m);
             board[m] = p;
-//          utils.dump(board, size, 0);
+//          utils.dump(board, size);
             p = -p;
         }
     }
-    const g = utils.checkGoal(board, player, size);
+    const g = utils.checkGoal(board, size);
     _.each(undo, function(p) {
         board[p] = 0;
     });
@@ -120,30 +120,29 @@ async function FindMove(sid, fen, player, callback, done, logger) {
     utils.InitializeFromFen(fen, board, model.SIZE, player);
 
     if (done) {
-        let goal = utils.checkGoal(board, player, model.SIZE);
+        let goal = utils.checkGoal(board, model.SIZE);
         if (goal !== null) {
             done(goal);
             return;
         }
+    }
 
-        const m = pie.FindMove(board, model.SIZE);
-        if (m !== null) {
-            const t1 = Date.now();
-            board = new Float32Array(model.SIZE * model.SIZE);
-            board[Math.abs(m)] = 1;
-            const setup = utils.getFen(board, model.SIZE, -player);
-            callback(sid, m, setup, 1000, t1 - t0);
-            return;
-        }
+    const m = pie.FindMove(board, model.SIZE);
+    if (m !== null) {
+        const t1 = Date.now();
+        board = new Float32Array(model.SIZE * model.SIZE);
+        board[utils.flip(Math.abs(m), model.SIZE, player)] = 1;
+        const setup = utils.getFen(board, model.SIZE, -player);
+        callback(sid, utils.FormatMove(m, model.SIZE), m, setup, 1000, t1 - t0);
+        return;
     }
 
     let b = new Float32Array(model.SIZE * model.SIZE * model.PLANE_COUNT);
     utils.encode(board, model.SIZE, model.PLANE_COUNT, b);
 
     const w = await model.predictEx(b);
-//  utils.dump(board, model.SIZE, 0, probs);
-    hints.analyze(board, player, model.SIZE, w.moves);
-    utils.dump(board, model.SIZE, 0, w.moves);
+    hints.analyze(board, 1, model.SIZE, w.moves);
+    utils.dump(board, model.SIZE, w.moves);
 
     let moves = getMoves(board, model.SIZE);
     const root = new Node(moves);
@@ -170,16 +169,18 @@ async function FindMove(sid, fen, player, callback, done, logger) {
     const t1 = Date.now();
 
     for (let i = 0; i < r.length; i++) {
-        console.log(utils.FormatMove(r[i].move, model.SIZE) + ': n = ' + r[i].n + ', w = ' + r[i].w + ', p = ' + r[i].p + ', e = ' + w.estimate);
+        const m = utils.flip(r[i].move, model.SIZE, player);
+        console.log(utils.FormatMove(m, model.SIZE) + ': n = ' + r[i].n + ', w = ' + r[i].w + ', p = ' + r[i].p + ', e = ' + w.estimate);
         if (logger) {
-            logger.info(utils.FormatMove(r[i].move, model.SIZE) + ': n = ' + r[i].n + ', w = ' + r[i].w + ', p = ' + r[i].p+ ', e = ' + w.estimate);
+            logger.info(utils.FormatMove(m, model.SIZE) + ': n = ' + r[i].n + ', w = ' + r[i].w + ', p = ' + r[i].p+ ', e = ' + w.estimate);
         }
         if (i >= 9) break;
     }
 
     board[r[0].move] = 1;
     const setup = utils.getFen(board, model.SIZE, -player);
-    callback(sid, r[0].move, setup, (r[0].n / root.n) * 1000, t1 - t0);
+    const result = utils.flip(r[0].move, model.SIZE, player);
+    callback(sid, utils.FormatMove(result, model.SIZE), result, setup, (r[0].n / root.n) * 1000, t1 - t0);
 }
 
 module.exports.FindMove = FindMove;

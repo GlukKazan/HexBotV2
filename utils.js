@@ -7,7 +7,7 @@ const EPS = 0.01;
 
 let edges = null;
 
-function dump(board, size, offset, moves) {
+function dump(board, size, moves) {
     for (let y = 0; y < size; y++) {
         let s = '';
         for (let i = 0; i <= y; i++) {
@@ -15,13 +15,13 @@ function dump(board, size, offset, moves) {
         }
         for (let x = 0; x < size; x++) {
             const pos = y * size + x;
-            if (board[offset + pos] > 0) {
+            if (board[pos] > 0) {
                 s = s + '* ';
-            } else if (board[offset + pos] < 0) {
+            } else if (board[pos] < 0) {
                 s = s + 'o ';
-            }  else if (!_.isUndefined(moves) && (moves[offset + pos] > 1 / (size * size))) {
+            }  else if (!_.isUndefined(moves) && (moves[pos] > 1 / (size * size))) {
                 s = s + '+ ';
-            }  else if (!_.isUndefined(moves) && (moves[offset + pos] < -1 / (size * size))) {
+            }  else if (!_.isUndefined(moves) && (moves[pos] < -1 / (size * size))) {
                 s = s + 'X ';
             }  else {
                 s = s + '. ';
@@ -69,6 +69,13 @@ function FormatMove(move, size) {
     return (LETTERS[col] + (row + 1)).toLowerCase() + sx;
 }
 
+function flip(pos, size, player) {
+    if (player > 0) return pos;
+    const x = pos % size;
+    const y = (pos / size) | 0;
+    return x * size + y;
+}
+
 function InitializeFromFen(fen, board, size, player) {
     let pos = 0;
     for (let i = 0; i < fen.length; i++) {
@@ -86,7 +93,7 @@ function InitializeFromFen(fen, board, size, player) {
                     }
                     ix++;
                     for (; ix > 0; ix--) {
-                        board[pos] = p * player;
+                        board[flip(pos, size, player)] = p * player;
                         pos++;
                     }
                 }
@@ -117,14 +124,15 @@ function encode(board, size, planes, out) {
 function pieceNotation(c, p, size) {
     if (p == 0) return '' + c;
     c--;
-    if (p > 0.01) c += size;
+    if (p < -0.01) c += size;
     return LETTERS[c];
 }
 
 function getFen(board, size, player) {
     let str = '';
     let k = 0; let c = 0; let p = 0;
-    for (let pos = 0; pos < size * size; pos++) {
+    for (let q = 0; q < size * size; q++) {
+        const pos = flip(q, size, -player);
         if (k >= size) {
             if (c > 0) {
                 str += pieceNotation(c, p, size);
@@ -135,7 +143,7 @@ function getFen(board, size, player) {
             p = 0;
         }
         k++;
-        const v = board[pos] * player;
+        const v = board[pos] * -player;
         if (Math.abs(v) < 0.01) {
             if ((p != 0) || ((c > 8) && (p == 0))) {
                 str += pieceNotation(c, p, size);
@@ -167,7 +175,7 @@ function getDirs(size) {
     return [-size, -size + 1, 1, size, size - 1, -1];
 }
 
-function checkGoal(board, player, size) {
+function checkGoal(board, size) {
     if (edges === null) {
         edges = [];
         let e = [];
@@ -186,7 +194,7 @@ function checkGoal(board, player, size) {
     let ix = 0;
     let group = [];
     _.each(edges[ix], function(p) {
-        if (board[p] * player < EPS) return;
+        if (board[p] < EPS) return;
         group.push(p);
     });
 //  console.log(group);
@@ -197,16 +205,16 @@ function checkGoal(board, player, size) {
             const p = navigate(group[i], dir, size);
             if (p === null) return;
             if (_.indexOf(group, p) >= 0) return;
-            if (board[p] * player < EPS) return;
+            if (board[p] < EPS) return;
             if (_.indexOf(edges[ix + 1], p) >= 0) f = true;
             group.push(p);
         });
     }
-    if (f) return player;
+    if (f) return 1;
     ix += 2;
     group = [];
     _.each(edges[ix], function(p) {
-        if (board[p] * player > -EPS) return;
+        if (board[p] > -EPS) return;
         group.push(p);
     });
 //  console.log(group);
@@ -217,16 +225,17 @@ function checkGoal(board, player, size) {
             const p = navigate(group[i], dir, size);
             if (p === null) return;
             if (_.indexOf(group, p) >= 0) return;
-            if (board[p] * player > -EPS) return;
+            if (board[p] > -EPS) return;
             if (_.indexOf(edges[ix + 1], p) >= 0) f = true;
             group.push(p);
         });
     }
-    if (f) return -player;
+    if (f) return -1;
     return null;
 }
 
 module.exports.dump = dump;
+module.exports.flip = flip;
 module.exports.navigate = navigate;
 module.exports.FormatMove = FormatMove;
 module.exports.InitializeFromFen = InitializeFromFen;

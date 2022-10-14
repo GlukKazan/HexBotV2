@@ -121,7 +121,7 @@ async function advise(sid, fen, player, coeff, callback) {
     console.log('Predict time: ' + (t2 - t1));
 
     hints.analyze(board, player, SIZE, moves);
-    utils.dump(board, SIZE, 0, moves);
+    utils.dump(board, SIZE, moves);
 
     let r = [];
     for (let i = 0; i < moves.length; i++) {

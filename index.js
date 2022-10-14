@@ -5,12 +5,11 @@ const _ = require('underscore');
 
 const ai = require('./ai');
 const model = require('./model');
-const utils = require('./utils');
 
 const VARIANT  = 225;
 const SERVICE  = 'https://games.dtco.ru';
-const USERNAME = 'HexBot';
-const PASSWORD = 'HexBot';
+const USERNAME = 'test';
+const PASSWORD = 'test';
 
 const STATE = {
     INIT: 1,
@@ -103,10 +102,10 @@ function AdvisorCallback(moves, time) {
     });
 }
 
-function AdvisorExCallback(sid, bestMove, fen, value, time) {
+function AdvisorExCallback(sid, result, ix, fen, value, time) {
     const moves = [{
         sid: sid,
-        move: utils.FormatMove(bestMove, model.SIZE),
+        move: result,
         weight: value
     }];
     _.each(moves, function(m) {
@@ -277,8 +276,7 @@ function DoneCallback(goal) {
     }
 }
 
-function FinishTurnCallback(sid, bestMove, fen, value, time) {
-    const move = utils.FormatMove(bestMove, model.SIZE);
+function FinishTurnCallback(sid, move, ix, fen, value, time) {
     const result = setup.match(/[?&]turn=(\d+)/);
     if (result) {
         turn = result[1];
