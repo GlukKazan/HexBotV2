@@ -7,14 +7,17 @@ const EPS = 0.01;
 
 let edges = null;
 
-function dump(board, size, moves) {
+function dump(board, size, moves, player) {
     for (let y = 0; y < size; y++) {
         let s = '';
         for (let i = 0; i <= y; i++) {
             s = s + ' ';
         }
         for (let x = 0; x < size; x++) {
-            const pos = y * size + x;
+            let pos = y * size + x;
+            if (!_.isUndefined(player) && (player < 0)) {
+                pos = x * size + y;
+            }
             if (board[pos] > 0) {
                 s = s + '* ';
             } else if (board[pos] < 0) {

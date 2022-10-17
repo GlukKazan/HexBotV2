@@ -8,8 +8,8 @@ const model = require('./model');
 
 const VARIANT  = 225;
 const SERVICE  = 'https://games.dtco.ru';
-const USERNAME = 'test';
-const PASSWORD = 'test';
+const USERNAME = 'HexBot';
+const PASSWORD = 'HexBot';
 
 const STATE = {
     INIT: 1,
@@ -85,8 +85,8 @@ let init = function(app) {
 
 function AdvisorCallback(moves, time) {
     _.each(moves, function(m) {
-        console.log('move = ' + m.move + ', value=' + m.weight + ', time = ' + time);
-        logger.info('move = ' + m.move + ', value=' + m.weight + ', time = ' + time);
+        console.log('move = ' + m.move + ', value = ' + m.weight + ', time = ' + time);
+        logger.info('move = ' + m.move + ', value = ' + m.weight + ', time = ' + time);
     });
     app.state  = STATE.WAIT;
     axios.post(SERVICE + '/api/ai', moves , {
@@ -277,9 +277,13 @@ function DoneCallback(goal) {
 }
 
 function FinishTurnCallback(sid, move, ix, fen, value, time) {
-    const result = setup.match(/[?&]turn=(\d+)/);
-    if (result) {
-        turn = result[1];
+    if (setup === null) {
+        turn = 1;
+    } else {
+        const result = setup.match(/[?&]turn=(\d+)/);
+        if (result) {
+            turn = result[1];
+        }
     }
     console.log('move = ' + move + ', value=' + value + ', time = ' + time);
     logger.info('move = ' + move + ', value=' + value + ', time = ' + time);

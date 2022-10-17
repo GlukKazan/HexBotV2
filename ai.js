@@ -142,7 +142,7 @@ async function FindMove(sid, fen, player, callback, done, logger) {
 
     const w = await model.predictEx(b);
     hints.analyze(board, 1, model.SIZE, w.moves);
-    utils.dump(board, model.SIZE, w.moves);
+    utils.dump(board, model.SIZE, w.moves, player);
 
     let moves = getMoves(board, model.SIZE);
     const root = new Node(moves);
@@ -168,19 +168,24 @@ async function FindMove(sid, fen, player, callback, done, logger) {
     });
     const t1 = Date.now();
 
+    let mx = r[0].w; let ix = 0;
     for (let i = 0; i < r.length; i++) {
         const m = utils.flip(r[i].move, model.SIZE, player);
         console.log(utils.FormatMove(m, model.SIZE) + ': n = ' + r[i].n + ', w = ' + r[i].w + ', p = ' + r[i].p + ', e = ' + w.estimate);
         if (logger) {
             logger.info(utils.FormatMove(m, model.SIZE) + ': n = ' + r[i].n + ', w = ' + r[i].w + ', p = ' + r[i].p+ ', e = ' + w.estimate);
         }
+        if (r[i].w > mx) {
+            mx = r[i].w;
+            ix = i;
+        }
         if (i >= 9) break;
     }
 
-    board[r[0].move] = 1;
+    board[r[ix].move] = 1;
     const setup = utils.getFen(board, model.SIZE, -player);
-    const result = utils.flip(r[0].move, model.SIZE, player);
-    callback(sid, utils.FormatMove(result, model.SIZE), result, setup, (r[0].n / root.n) * 1000, t1 - t0);
+    const result = utils.flip(r[ix].move, model.SIZE, player);
+    callback(sid, utils.FormatMove(result, model.SIZE), result, setup, (r[ix].n / root.n) * 1000, t1 - t0);
 }
 
 module.exports.FindMove = FindMove;
