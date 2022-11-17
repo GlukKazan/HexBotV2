@@ -10,7 +10,7 @@ const utils = require('./utils');
 const C = 1.5;
 const D = 30.5;
 
-const MAX_TIME = 5000;
+const MAX_TIME = 7000;
 const DO_TOTAL = 10000;
 const EPS = 0.001;
 
@@ -147,6 +147,7 @@ async function FindMove(sid, fen, player, callback, done, logger) {
     let moves = getMoves(board, model.SIZE);
     const root = new Node(moves);
 
+    let cnt = 0;
     for (let i = 0; i < DO_TOTAL; i++) {
         const c = root.getUCT(board, model.SIZE, w.moves);
         if (c === null) break;
@@ -161,6 +162,7 @@ async function FindMove(sid, fen, player, callback, done, logger) {
         if (i % 100 == 0) {
             if (Date.now() - t0 > MAX_TIME) break;
         }
+        cnt++;
     }
 
     const r = _.sortBy(root.childs, function(c) {
@@ -180,6 +182,10 @@ async function FindMove(sid, fen, player, callback, done, logger) {
             ix = i;
         }
         if (i >= 9) break;
+    }
+    console.log('Time = ' + (t1 - t0) + ', N = ' + cnt);
+    if (logger) {
+        logger.info('Time = ' + (t1 - t0) + ', N = ' + cnt);
     }
 
     board[r[ix].move] = 1;

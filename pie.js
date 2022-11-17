@@ -4,8 +4,8 @@ const _ = require('underscore');
 
 const utils = require('./utils');
 
-const FIRST = [27, 28, 29, 30, 37, 41, 79, 83, 90, 91, 92, 93];
-const SECOND = [38, 39, 40, 48, 49, 50, 51, 58, 59, 60, 61, 62, 69, 70, 71, 72, 80, 81, 82];
+const FIRST = [59, 61, 49, 50, 70, 71, 39, 81];
+const SECOND = [60];
 
 function FindMove(board, size) {
     let cnt = 0; let pos = null;
